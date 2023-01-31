@@ -1,4 +1,4 @@
-import { sign } from 'jsonwebtoken';
+// import { sign } from 'jsonwebtoken';
 /* eslint-disable prettier/prettier */
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -67,7 +67,7 @@ export class AuthService {
             );
         }
         // tslint:disable-next-line: no-string-literal
-        const { password, ...result } = userExist['dataValues'];
+        const {   ...result } = userExist['dataValues'];
         // generate token
         const token = await this.generateToken(user);
         return {result  , userToken: token };
@@ -90,7 +90,7 @@ export class AuthService {
         // create the user
         const newUser = await this.userService.create({ ...user, password: pass });
 
-        const { password, ...result } = newUser['dataValues'];
+        const {  ...result } = newUser['dataValues'];
 
         // generate token
         const token = await this.generateToken(result);

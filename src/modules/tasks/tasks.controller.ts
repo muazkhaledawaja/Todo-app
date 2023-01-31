@@ -4,9 +4,9 @@ import { TasksService } from './tasks.service';
 import { Task as TaskEntity } from './task.model';
 import { TaskDto } from './dto/task.dto';
 import { JwtGuard } from 'src/common/guards/auth.guard';
- 
+
 @Controller('tasks')
-    @UseGuards(JwtGuard)
+@UseGuards(JwtGuard)
 
 export class TasksController {
     constructor(private readonly taskService: TasksService) { }

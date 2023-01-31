@@ -1,25 +1,25 @@
 /* eslint-disable prettier/prettier */
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { HttpException, HttpStatus, Injectable,  } from '@nestjs/common';
+ 
+import { AuthService } from './auth.service';
+import { UserDto } from '../users/dto/user.dto';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(private readonly userService: UsersService) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') { 
+    constructor(private readonly authService: AuthService) {
         super({
-             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-             ignoreExpiration: false,
-             secretOrKey:  process.env.JWT_KEY ,
-        });
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            secretOrKey: process.env.SECRETKEY,
+        });  
     }
-
-    async validate(payload: any) {
-        // check if user in the token actually exist
-        const user = await this.userService.findOneById(payload.id);
+    
+    async validate( email:string,password:string ): Promise<UserDto> {
+        const user = await this.authService.validateUser( email,password );
         if (!user) {
-            throw new UnauthorizedException('You are not authorized');
-        }
-        return payload;
+            throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);    
+        }    
+        return user;  
     }
 }

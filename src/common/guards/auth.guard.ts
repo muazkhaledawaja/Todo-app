@@ -16,14 +16,16 @@ import {
       context: ExecutionContext,
     ): boolean | Promise<boolean> | Observable<boolean> {
       const request = context.switchToHttp().getRequest();
+ 
       try {
-        const { token } = request.headers;
-        if (!token) {
+        const { authorization } = request.headers;
+        if (!authorization) {
           throw new HttpException('Please Login first', 401);
         }
       
+     
           
-        const verify = verifyToken(token);
+        const verify = verifyToken(authorization);
         const { id } = verify as any;
   
         if (id) {
