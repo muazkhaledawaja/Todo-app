@@ -8,8 +8,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
-import { LocalStrategy } from './local.strategy';
-import { JwtStrategy } from './jwt.strategy';
+import { LocalStrategy } from './strategy/local.strategy';
+import { JwtStrategy } from './strategy/jwt.strategy';
 
 
 @Module({
@@ -17,7 +17,7 @@ import { JwtStrategy } from './jwt.strategy';
         PassportModule,
         UsersModule,
         JwtModule.register({
-            secret: process.env.JWT_KEY,
+            secret: 'process.env.JWT_KEY',
             signOptions: { expiresIn: process.env.TOKEN_EXPIRATION },
         }),
     ],
@@ -27,5 +27,6 @@ import { JwtStrategy } from './jwt.strategy';
         JwtStrategy
     ],
     controllers: [AuthController],
+    exports: [AuthService]
 })
 export class AuthModule { }

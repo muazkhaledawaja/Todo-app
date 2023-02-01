@@ -1,6 +1,10 @@
-// import { sign } from 'jsonwebtoken';
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+    HttpException,
+    HttpStatus,
+    Injectable, 
+    InternalServerErrorException
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
@@ -44,33 +48,41 @@ export class AuthService {
     }
 
     public async login(user) {
-        // find if user exist with this email
-        const userExist = await this.userService.findOneByEmail(user.email);
-        if (!userExist) {
-            throw new HttpException(
-                {
-                    statusCode: 404,
-                    message: 'email not found',
-                },
-                HttpStatus.NOT_FOUND,
-            );
+        try {
+            // find if user exist with this email
+            const userExist = await this.userService.findOneByEmail(user.email);
+            if (!userExist) {
+                throw new HttpException(
+                    {
+                        statusCode: HttpStatus.UNAUTHORIZED,
+                        message: "user not found",
+                    },
+                    HttpStatus.UNAUTHORIZED,
+                );
+            }
+            // find if user password match
+            const isPasswordCorrect = await this.comparePassword(user.password, userExist.password);
+            if (!isPasswordCorrect) {
+                throw new HttpException(
+                    {
+                        statusCode: HttpStatus.UNAUTHORIZED,
+                        message: 'password not match',
+                    },
+                    HttpStatus.UNAUTHORIZED,
+                );
+            }
+            // tslint:disable-next-line: no-string-literal
+            const { password, ...result } = userExist['dataValues'];
+
+            delete user.password;
+
+            return {
+                result,
+                userToken: await this.generateToken(user)
+            };
+        } catch (e) {
+            throw new InternalServerErrorException(e);
         }
-        // find if user password match
-        const match = await this.comparePassword(user.password, userExist.password);
-        if (!match) {
-            throw new HttpException(
-                {
-                    statusCode: 401,
-                    message: 'password not match',
-                },
-                HttpStatus.UNAUTHORIZED,
-            );
-        }
-        // tslint:disable-next-line: no-string-literal
-        const {   ...result } = userExist['dataValues'];
-        // generate token
-        const token = await this.generateToken(user);
-        return {result  , userToken: token };
     }
 
     public async signup(user) {
@@ -90,7 +102,7 @@ export class AuthService {
         // create the user
         const newUser = await this.userService.create({ ...user, password: pass });
 
-        const {  ...result } = newUser['dataValues'];
+        const { password, ...result } = newUser['dataValues'];
 
         // generate token
         const token = await this.generateToken(result);

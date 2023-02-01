@@ -1,16 +1,28 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, UseGuards, Request } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Param,
+    Body,
+    NotFoundException,
+    UseGuards,
+    Request
+} from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { Task as TaskEntity } from './task.model';
+import { Task as TaskModel } from './task.model';
 import { TaskDto } from './dto/task.dto';
-import { JwtGuard } from 'src/common/guards/auth.guard';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('tasks')
-@UseGuards(JwtGuard)
 
 export class TasksController {
     constructor(private readonly taskService: TasksService) { }
-
+    // @UseGuards(AuthGuard('local'))
+    // @UseGuards(JwtAuthGuard)
     @Get()
     async findAll() {
         // get all tasks in the db
@@ -18,7 +30,7 @@ export class TasksController {
     }
 
     @Get(':id')
-    async findOne(@Param('id') id: number): Promise<TaskEntity> {
+    async findOne(@Param('id') id: number): Promise<TaskModel> {
         // find the task with this id
         const task = await this.taskService.findOne(id);
 
@@ -32,18 +44,17 @@ export class TasksController {
     }
 
     @Post()
-    async create(@Body() task: TaskDto, @Request() req): Promise<TaskEntity> {
+    async create(@Body() task: TaskDto, @Request() req): Promise<TaskModel> {
         // create a new task and return the newly created task
         return await this.taskService.create(task, req.user.id);
     }
 
     @Put(':id')
-    async update(@Param('id') id: number, @Body() task: TaskDto, @Request() req): Promise<TaskEntity> {
+    async update(@Param('id') id: number, @Body() task: TaskDto, @Request() req): Promise<TaskModel> {
         // get the number of row affected and the updated task
         const { numberOfAffectedRows, updatedTask } = await this.taskService.update(id, task, req.user.id);
 
         // if the number of row affected is zero, 
-
         // it means the task doesn't exist in our db
         if (numberOfAffectedRows === 0) {
             throw new NotFoundException('This Task doesn\'t exist');
@@ -64,7 +75,7 @@ export class TasksController {
             throw new NotFoundException('This Task doesn\'t exist');
         }
 
-        // return success message
+
         return 'Successfully deleted';
     }
 }

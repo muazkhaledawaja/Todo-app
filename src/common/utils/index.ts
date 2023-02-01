@@ -7,8 +7,8 @@ const createToken = (id: number) => {
   return token;
 };
 
-const verifyToken = (authorization: string) => {
-  const decoded = verify(authorization, process.env.JWT_KEY);
+const verifyToken = (token: string) => {
+  const decoded = verify(token, process.env.JWT_KEY);
 
   return decoded;
 };

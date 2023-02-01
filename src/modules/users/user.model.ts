@@ -1,6 +1,11 @@
 /* eslint-disable prettier/prettier */
 
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import {
+    Table,
+    Column,
+    Model,
+    DataType
+} from 'sequelize-typescript';
 
 @Table
 export class User extends Model<User> {
@@ -23,5 +28,5 @@ export class User extends Model<User> {
     })
     password: string;
 
- 
+
 }
